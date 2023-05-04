@@ -7,6 +7,7 @@ import AutocorrelogramView from "./AutocorrelogramView/AutocorrelogramView"
 import AverageWaveformView from "./AverageWaveformView/AverageWaveformView"
 import SnippetsView from "./SnippetsView/SnippetsView"
 import SpikeAmplitudesView from "./SpikeAmplitudesView/SpikeAmplitudesView"
+import UnitAssessmentView from "./UnitAssessmentView/UnitAssessmentView"
 import { useUnitSelection } from "./UnitSelectionContext"
 
 type Props = {
@@ -42,51 +43,64 @@ const CurrentUnitView: FunctionComponent<Props> = ({width, height}) => {
     const unitInfo = useUnitInfo(currentUnitId)
     if (currentUnitId === undefined) return <div>No unit selected</div>
     if (unitInfo === undefined) return <div>Loading...</div>
+    const rightPanelWidth = 250
     return (
         <SetupTimeseriesSelection>
-            <Splitter
-                width={width}
-                height={height}
-                direction="vertical"
-                initialPosition={2 * height / 3}
-            >
-                <Splitter
-                    width={0}
-                    height={0}
-                    direction="vertical"
-                    initialPosition={height / 3}
-                >
+            <div style={{position: 'absolute', width, height}}>
+                <div style={{position: 'absolute', width: width - rightPanelWidth, height}}>
                     <Splitter
-                        width={0}
-                        height={0}
-                        direction="horizontal"
-                        initialPosition={width / 2}
+                        width={width - rightPanelWidth}
+                        height={height}
+                        direction="vertical"
+                        initialPosition={2 * height / 3}
                     >
-                        <AutocorrelogramView
+                        <Splitter
                             width={0}
                             height={0}
-                            unitId={currentUnitId}
-                        />
-                        <AverageWaveformView
+                            direction="vertical"
+                            initialPosition={height / 3}
+                        >
+                            <Splitter
+                                width={0}
+                                height={0}
+                                direction="horizontal"
+                                initialPosition={width / 2}
+                            >
+                                <AutocorrelogramView
+                                    width={0}
+                                    height={0}
+                                    unitId={currentUnitId}
+                                />
+                                <AverageWaveformView
+                                    width={0}
+                                    height={0}
+                                    unitId={currentUnitId}
+                                    unitInfo={unitInfo}
+                                />
+                            </Splitter>
+                            <SpikeAmplitudesView
+                                width={0}
+                                height={0}
+                                unitId={currentUnitId}
+                            />
+                        </Splitter>
+                        <SnippetsView
                             width={0}
                             height={0}
                             unitId={currentUnitId}
                             unitInfo={unitInfo}
                         />
                     </Splitter>
-                    <SpikeAmplitudesView
-                        width={0}
-                        height={0}
+                </div>
+                <div style={{position: 'absolute', left: width - rightPanelWidth, width: rightPanelWidth, height}}>
+                    <UnitAssessmentView
+                        width={rightPanelWidth}
+                        height={height}
                         unitId={currentUnitId}
+                        unitInfo={unitInfo}
                     />
-                </Splitter>
-                <SnippetsView
-                    width={0}
-                    height={0}
-                    unitId={currentUnitId}
-                    unitInfo={unitInfo}
-                />
-            </Splitter>
+                </div>
+            </div>
         </SetupTimeseriesSelection>
     )
 }

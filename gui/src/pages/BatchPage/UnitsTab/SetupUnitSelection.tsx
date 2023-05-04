@@ -1,4 +1,4 @@
-import { FunctionComponent, PropsWithChildren, useMemo, useState } from "react"
+import { FunctionComponent, PropsWithChildren, useEffect, useMemo, useState } from "react"
 import { useBatch } from "../BatchContext"
 import UnitSelectionContext from "./UnitSelectionContext"
 
@@ -19,6 +19,12 @@ const SetupUnitSelection: FunctionComponent<PropsWithChildren<Props>> = ({childr
         unitIds,
         setCurrentUnitId
     }
+
+    useEffect(() => {
+        if ((unitIds) && (unitIds.length > 0) && (currentUnitId === undefined)) {
+            setCurrentUnitId(unitIds[0])
+        }
+    }, [unitIds, currentUnitId])
 
     return (
         <UnitSelectionContext.Provider value={value}>

@@ -7,7 +7,7 @@ type Props = {
     height: number
 }
 
-const MainTab: FunctionComponent<Props> = ({width, height}) => {
+const DescriptionTab: FunctionComponent<Props> = ({width, height}) => {
     return (
         <Splitter
             width={width}
@@ -23,4 +23,4 @@ const MainTab: FunctionComponent<Props> = ({width, height}) => {
     )
 }
 
-export default MainTab
+export default DescriptionTab
