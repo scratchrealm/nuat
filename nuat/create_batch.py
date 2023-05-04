@@ -84,10 +84,18 @@ def create_batch(*,
         os.makedirs(unit_folder)
         channel_neighborhood = [x for x in channel_neighborhoods if x['unit_id'] == unit_id][0]
         spike_times = sorting.get_unit_spike_train(unit_id, segment_index=0)
+        spike_times_sec = spike_times / recording.get_sampling_frequency()
         autocorrelogram = compute_correlogram_data(sorting=sorting, unit_id1=unit_id, window_size_msec=100, bin_size_msec=1)
         snippets_in_neighborhood = extract_snippets_in_channel_neighborhood(traces=recording.get_traces(), times=spike_times, neighborhood=channel_neighborhood["channel_indices"], T1=30, T2=30)
         channel_neighborhood_indices = channel_neighborhood['channel_indices']
         channel_locations_in_neighborhood = np.array(recording.get_channel_locations())[channel_neighborhood_indices]
+
+        average_waveform_in_neighborhood = np.median(snippets_in_neighborhood, axis=0)
+
+        # spike amplitudes
+        peak_channel_index_in_neighborhood = channel_neighborhood["channel_ids"].index(channel_neighborhood["peak_channel_id"])
+        spike_amplitudes = np.min(snippets_in_neighborhood[:, :, peak_channel_index_in_neighborhood], axis=1)
+
         # write unit_info.json
         unit_info = {
             'channel_neighborhood_ids': channel_neighborhood['channel_ids'],
@@ -103,11 +111,12 @@ def create_batch(*,
         # open data.zarr
         data_zarr_fname = f'{unit_folder}/data.zarr'
         data_zarr_root_group = zarr.open(data_zarr_fname, mode="w")
-        data_zarr_root_group.create_dataset("spike_times", data=spike_times.astype(np.int32), chunks=(100000,))
-        data_zarr_root_group.create_dataset("average_waveform", data=full_templates[unit_index].astype(np.float32), chunks=(1000, 1000))
+        data_zarr_root_group.create_dataset("spike_times", data=spike_times_sec.astype(np.float32), chunks=(100000,))
+        data_zarr_root_group.create_dataset("average_waveform_in_neighborhood", data=average_waveform_in_neighborhood.astype(np.float32), chunks=(1000, 1000))
         data_zarr_root_group.create_dataset("autocorrelogram_bin_edges_sec", data=autocorrelogram['bin_edges_sec'], chunks=(1000,))
         data_zarr_root_group.create_dataset("autocorrelogram_bin_counts", data=autocorrelogram['bin_counts'], chunks=(1000,))
         data_zarr_root_group.create_dataset("snippets_in_neighborhood", data=snippets_in_neighborhood.astype(np.float32), chunks=(1000, 100, 50))
+        data_zarr_root_group.create_dataset("spike_amplitudes", data=spike_amplitudes.astype(np.float32), chunks=(10000,))
     
     # write batch.yaml
     print('Writing batch.yaml...')
