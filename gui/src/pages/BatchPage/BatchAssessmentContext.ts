@@ -8,6 +8,9 @@ export type UnitAssessment = {
         snippets?: number
         overall?: number
     }
+    multiUnitActivity?: boolean
+    noiseOverlap?: boolean
+    comments?: string
 }
 
 export type BatchAssessment = {
