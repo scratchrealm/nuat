@@ -10,11 +10,11 @@ type Props = {
 }
 
 const qKeys = [
-    {key: 'autocorrelogram', label: 'Autocorrelogram', tooltip: "A score of 1 indicates no refractory period dip, while a score of 10 indicates a clear dip and no ISI violations."},
-    {key: 'averageWaveform', label: 'Average waveform', tooltip: "A score of 1 indicates the template has no resemblance to a spike, while a score of 10 indicates a typical spike of a neural event."},
-    {key: 'spikeAmplitudes', label: 'Spike amplitudes', tooltip: "A score of 1 indicates that the spike amplitudes imply multi-unit or extremely artifactual activity, while a score of 10 indicates steady and consistent amplitudes."},
-    {key: 'snippets', label: 'Snippets', tooltip: "A score of 1 indicates a high number of outliers or pure noise snippets, while a score of 10 indicates that all snippets look like the average waveform plus noise."},
-    {key: 'overall', label: 'Overall', tooltip: "A score of 1 indicates a very poor unit, while a score of 10 indicates a very good unit."}
+    {key: 'autocorrelogram', label: 'Autocorrelogram', tooltip: "A score of 1 indicates no refractory period dip, while a score of 5 indicates a clear dip and no ISI violations."},
+    {key: 'averageWaveform', label: 'Average waveform', tooltip: "A score of 1 indicates the template has no resemblance to a spike, while a score of 5 indicates a typical spike of a neural event."},
+    {key: 'spikeAmplitudes', label: 'Spike amplitudes', tooltip: "A score of 1 indicates that the spike amplitudes imply multi-unit or extremely artifactual activity, while a score of 5 indicates steady and consistent amplitudes."},
+    {key: 'snippets', label: 'Snippets', tooltip: "A score of 1 indicates a high number of outliers or pure noise snippets, while a score of 5 indicates that all snippets look like the average waveform plus noise."},
+    {key: 'overall', label: 'Overall', tooltip: "A score of 1 indicates a very poor unit, while a score of 5 indicates a very good unit."}
 ]
 
 const UnitAssessmentView: FunctionComponent<Props> = ({ width, height, unitId }) => {
@@ -95,7 +95,8 @@ type RatingScaleProps = {
 }
 
 const RatingScale: FunctionComponent<RatingScaleProps> = ({ value, onChange, readOnly, tooltip }) => {
-    const values = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+    // const values = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+    const values = [[1, 2, 3, 4, 5]]
     return (
         <div title={tooltip}>
             {
