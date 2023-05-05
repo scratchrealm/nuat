@@ -41,7 +41,7 @@ const BatchControlPanel: FunctionComponent<Props> = () => {
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to batches</Hyperlink></div>
             <hr />
-            <div>Batch: {batchId}</div>
+            <div style={{overflowWrap: 'break-word'}}>Batch: {batchId}</div>
             <hr />
             {
                 !batchAssessmentOnDisk && !batchAssessment && userId && (

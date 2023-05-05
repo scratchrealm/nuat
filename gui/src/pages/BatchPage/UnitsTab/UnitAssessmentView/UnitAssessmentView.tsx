@@ -79,9 +79,7 @@ const UnitAssessmentView: FunctionComponent<Props> = ({ width, height, unitId })
                 }} readOnly={batchAssessment ? false : true} />
                 <p>Zoom and pan the spike amplitudes view to see different spikes in the snippets view.</p>
                 <button onClick={() => {
-                    setUnitAssessment(
-                        unitId, {quality: {}}
-                    )
+                    setUnitAssessment(unitId, undefined)
                 }} disabled={batchAssessment ? false : true}>Clear</button>
             </div>
         </div>

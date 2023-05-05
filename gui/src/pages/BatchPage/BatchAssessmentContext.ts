@@ -25,7 +25,7 @@ export type BatchAssessment = {
 export type BatchAssessmentAction = {
     type: 'setUnitAssessment'
     unitId: string | number
-    assessment: UnitAssessment
+    assessment: UnitAssessment | undefined
 } | {
     type: 'setBatchAssessment'
     batchAssessment: BatchAssessment
@@ -35,23 +35,31 @@ export const batchAssessmentReducer = (state: BatchAssessment, action: BatchAsse
     switch (action.type) {
         case 'setUnitAssessment': {
             if (state === undefined) return state // batch assessment needs to be created first
+            const {assessment} = action
             let unitAssessments = [...state.unitAssessments]
             if (!unitAssessments.some(a => (a.unitId === action.unitId))) {
-                unitAssessments.push({
-                    unitId: action.unitId,
-                    assessment: action.assessment
-                })
+                if (assessment !== undefined) {
+                    unitAssessments.push({
+                        unitId: action.unitId,
+                        assessment
+                    })
+                }
             }
             else {
-                unitAssessments = unitAssessments.map(a => {
-                    if (a.unitId === action.unitId) {
-                        return {
-                            unitId: action.unitId,
-                            assessment: action.assessment
+                if (assessment !== undefined) {
+                    unitAssessments = unitAssessments.map(a => {
+                        if (a.unitId === action.unitId) {
+                            return {
+                                unitId: action.unitId,
+                                assessment
+                            }
                         }
-                    }
-                    else return a
-                })
+                        else return a
+                    })
+                }
+                else {
+                    unitAssessments = unitAssessments.filter(a => (a.unitId !== action.unitId))
+                }
             }
             return {
                 ...state,
@@ -81,7 +89,7 @@ const BatchAssessmentContext = React.createContext<BatchAssessmentContextType>({
 
 export const useBatchAssessment = () => {
     const {batchAssessment, batchAssessmentOnDisk, saveBatchAssessment, batchAssessmentDispatch} = React.useContext(BatchAssessmentContext)
-    const setUnitAssessment = useCallback((unitId: string | number, assessment: UnitAssessment) => {
+    const setUnitAssessment = useCallback((unitId: string | number, assessment: UnitAssessment | undefined) => {
         batchAssessmentDispatch({type: 'setUnitAssessment', unitId, assessment})
     }, [batchAssessmentDispatch])
     const setBatchAssessment = useCallback((assessment: BatchAssessment) => {
