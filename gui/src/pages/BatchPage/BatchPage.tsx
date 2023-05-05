@@ -30,6 +30,7 @@ const BatchPage: FunctionComponent<Props> = ({batchId, width, height}) => {
                     height={height}
                     tabs={[
                         {label: 'Units', closeable: false},
+                        {label: 'Unit pairs', closeable: false},
                         {label: 'Description', closeable: false}
                     ]}
                 >
@@ -37,6 +38,7 @@ const BatchPage: FunctionComponent<Props> = ({batchId, width, height}) => {
                         width={0}
                         height={0}
                     />
+                    <div>Not yet implemented</div>
                     <DescriptionTab
                         width={0}
                         height={0}
