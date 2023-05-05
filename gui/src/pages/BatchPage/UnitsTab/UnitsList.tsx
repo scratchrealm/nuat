@@ -23,7 +23,7 @@ const UnitsList: FunctionComponent<Props> = ({width, height}) => {
         }
     }), [currentUnitId])
     return (
-        <div style={{position: 'absolute', width, height}}>
+        <div style={{position: 'absolute', width, height, background: 'white'}}>
             <table>
                 <thead>
                     <tr>

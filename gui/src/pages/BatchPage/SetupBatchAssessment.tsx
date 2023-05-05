@@ -8,7 +8,7 @@ type Props = {
 }
 
 const SetupBatchAssessment: FunctionComponent<PropsWithChildren<Props>> = ({children}) => {
-    const [batchAssessment, batchAssessmentDispatch] = useReducer(batchAssessmentReducer, {batchId: '', userId: '', unitAssessments: []})
+    const [batchAssessment, batchAssessmentDispatch] = useReducer(batchAssessmentReducer, undefined)
     const {userId} = useSignedIn()
     const {batchId, batchUri} = useBatch()
     const [batchAssessmentOnDisk, setBatchAssessmentOnDisk] = useState<BatchAssessment>(undefined)

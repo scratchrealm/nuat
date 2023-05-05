@@ -29,18 +29,12 @@ const SpikeAmplitudesView: FunctionComponent<Props> = ({width, height, unitId}) 
 
     const {ampMin, ampMax} = useMemo(() => {
         if (!spikeAmplitudesData) return {ampMin: 0, ampMax: 1}
-        let ampMin = 0
-        let ampMax = 1
+        let ampMin = 0 // be sure to include 0
+        let ampMax = 0 // be sure to include 0
         for (let i = 0; i < spikeAmplitudesData.length; i++) {
             const amp = spikeAmplitudesData[i]
-            if (i === 0) {
-                ampMin = amp
-                ampMax = amp
-            }
-            else {
-                if (amp < ampMin) ampMin = amp
-                if (amp > ampMax) ampMax = amp
-            }
+            if (amp < ampMin) ampMin = amp
+            if (amp > ampMax) ampMax = amp
         }
         return {ampMin, ampMax}
     }, [spikeAmplitudesData])

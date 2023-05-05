@@ -58,6 +58,13 @@ async function draw() {
         return canvasHeight - margins.bottom - (canvasHeight - margins.top - margins.bottom) * (a * amplitudeScaleFactor - opts.ampMin) / (opts.ampMax - opts.ampMin)
     }
 
+    // zero line
+    context.strokeStyle = 'gray'
+    context.beginPath()
+    context.moveTo(timeToPixel(visibleStartTimeSec), amplitudeToPixel(0))
+    context.lineTo(timeToPixel(visibleEndTimeSec), amplitudeToPixel(0))
+    context.stroke()
+
     context.fillStyle = 'black'
     for (let i = 0; i < spikeTimes.length; i++) {
         const t = spikeTimes[i]
