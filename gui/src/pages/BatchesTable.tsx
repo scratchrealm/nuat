@@ -1,8 +1,8 @@
 import { FunctionComponent } from "react";
 import Hyperlink from "../components/Hyperlink";
 import useRoute from "../useRoute";
+import { BatchConfig } from "./BatchPage/BatchContext";
 import './scientific-table.css';
-import { BatchConfig } from "./useBatchData";
 import { Summary } from "./useSummary";
 
 type Props = {

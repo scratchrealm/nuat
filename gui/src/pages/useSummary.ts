@@ -1,6 +1,6 @@
 import { getFileData } from "@figurl/interface"
 import { useCallback, useEffect, useState } from "react"
-import { BatchConfig } from "./useBatchData"
+import { BatchConfig } from "./BatchPage/BatchContext"
 
 export type Summary = {
     batches: {

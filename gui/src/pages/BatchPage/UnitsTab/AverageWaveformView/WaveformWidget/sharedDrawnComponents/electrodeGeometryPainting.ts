@@ -1,4 +1,4 @@
-import { AffineTransform } from "../../../view-unit-similarity-matrix"
+import { AffineTransform } from "../AffineTransform"
 import { PixelSpaceElectrode } from "./ElectrodeGeometry"
 
 export type ElectrodeColors = {
