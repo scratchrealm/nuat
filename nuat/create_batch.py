@@ -33,21 +33,6 @@ def create_batch(*,
     
     # create the output folder
     os.makedirs(output_folder)
-
-    # create batch_info.json
-    batch_info = {
-        'batch_id': batch_id,
-        'channel_ids': channel_ids,
-        'sampling_frequency': float(recording.get_sampling_frequency()),
-        'num_frames': int(recording.get_num_frames()),
-        'unit_ids': unit_ids,
-        'channel_locations': serialize_channel_locations(recording.get_channel_locations())
-    }
-    print(f'Num. channels: {len(channel_ids)}')
-    print(f'Num. units: {len(unit_ids)}')
-    print(f'Num. frames: {batch_info["num_frames"]}')
-    with open(f'{output_folder}/batch_info.json', 'w') as f:
-        json.dump(batch_info, f, indent=2)
     
     # compute full templates
     print('Computing full templates...')
@@ -117,6 +102,124 @@ def create_batch(*,
         data_zarr_root_group.create_dataset("autocorrelogram_bin_counts", data=autocorrelogram['bin_counts'], chunks=(1000,))
         data_zarr_root_group.create_dataset("snippets_in_neighborhood", data=snippets_in_neighborhood.astype(np.float32), chunks=(1000, 100, 50))
         data_zarr_root_group.create_dataset("spike_amplitudes", data=spike_amplitudes.astype(np.float32), chunks=(10000,))
+
+    # Computing unit template correlations
+    print('Computing unit template correlations...')
+    all_correlations = []
+    for i, unit_id1 in enumerate(unit_ids):
+        template1 = full_templates[i, :, :]
+        for j, unit_id2 in enumerate(unit_ids):
+            if j <= i:
+                continue
+            template2 = full_templates[j, :, :]
+            correlation = np.corrcoef(template1.ravel(), template2.ravel())[0, 1]
+            all_correlations.append({
+                'unit_id1': unit_id1,
+                'unit_id2': unit_id2,
+                'correlation': correlation
+            })
+    # Sort by correlation
+    all_correlations = sorted(all_correlations, key=lambda x: x['correlation'], reverse=True)
+    # Choose the best len(unit_ids) * 3 correlations
+    unit_pair_ids = []
+    for correlation in all_correlations:
+        if len(unit_pair_ids) >= len(unit_ids) * 3:
+            break
+        unit_pair_ids.append([correlation['unit_id1'], correlation['unit_id2']])
+    # sort by unit id[0], then unit_id[1]
+    unit_pair_ids = sorted(unit_pair_ids, key=lambda x: (x[0], x[1]))
+    print(f'Using {len(unit_pair_ids)} unit pairs for similarity comparison.')
+
+    for unit_pair_id in unit_pair_ids:
+        print(f'Processing unit pair {unit_pair_id}...')
+        unit_pair_id_str = f'{unit_pair_id[0]}-{unit_pair_id[1]}'
+        unit_pair_folder = f'{output_folder}/unit_pairs/{unit_pair_id_str}'
+        os.makedirs(unit_pair_folder)
+        # use the union of the two channel neighborhoods
+        unit1_channel_neighborhood = [x for x in channel_neighborhoods if x['unit_id'] == unit_pair_id[0]][0]
+        unit2_channel_neighborhood = [x for x in channel_neighborhoods if x['unit_id'] == unit_pair_id[1]][0]
+        channel_neighborhood_channel_indices = np.union1d(unit1_channel_neighborhood['channel_indices'], unit2_channel_neighborhood['channel_indices'])
+        channel_neighborhood_channel_ids = [channel_ids[i] for i in channel_neighborhood_channel_indices]
+        spike_times_1 = sorting.get_unit_spike_train(unit_pair_id[0], segment_index=0)
+        spike_times_2 = sorting.get_unit_spike_train(unit_pair_id[1], segment_index=0)
+        spike_times_sec_1 = spike_times_1 / recording.get_sampling_frequency()
+        spike_times_sec_2 = spike_times_2 / recording.get_sampling_frequency()
+        cross_correlogram = compute_correlogram_data(sorting=sorting, unit_id1=unit_pair_id[0], unit_id2=unit_pair_id[1], window_size_msec=100, bin_size_msec=1)
+        channel_locations_in_neighborhood = np.array(recording.get_channel_locations())[channel_neighborhood_channel_indices]
+
+        snippets_1_in_neighborhood = extract_snippets_in_channel_neighborhood(traces=recording.get_traces(), times=spike_times_1, neighborhood=channel_neighborhood_channel_indices, T1=30, T2=30)
+        snippets_2_in_neighborhood = extract_snippets_in_channel_neighborhood(traces=recording.get_traces(), times=spike_times_2, neighborhood=channel_neighborhood_channel_indices, T1=30, T2=30)
+
+        average_waveform_1_in_neighborhood = np.median(snippets_1_in_neighborhood, axis=0)
+        average_waveform_2_in_neighborhood = np.median(snippets_2_in_neighborhood, axis=0)
+
+        V1s = snippets_1_in_neighborhood.reshape((snippets_1_in_neighborhood.shape[0], snippets_1_in_neighborhood.shape[1] * snippets_1_in_neighborhood.shape[2]))
+        V2s = snippets_2_in_neighborhood.reshape((snippets_2_in_neighborhood.shape[0], snippets_2_in_neighborhood.shape[1] * snippets_2_in_neighborhood.shape[2]))
+
+        V1_mean = np.mean(V1s, axis=0)
+        V2_mean = np.mean(V2s, axis=0)
+
+        # direction of discrimination
+        direction_of_discrimination = (V2_mean - V1_mean) / np.linalg.norm(V2_mean - V1_mean)
+
+        # inner products with direction of discrimination
+        discrimination_features_1 = np.dot(V1s, direction_of_discrimination)
+        discrimination_features_2 = np.dot(V2s, direction_of_discrimination)
+
+        # subtract off the direction of discrimination
+        V1s_orth = V1s - np.outer(discrimination_features_1, direction_of_discrimination)
+        V2s_orth = V2s - np.outer(discrimination_features_2, direction_of_discrimination)
+
+        # find the first principal component of the union of V1s_orth and V2s_orth
+        V1s_orth_V2s_orth = np.concatenate((V1s_orth, V2s_orth), axis=0)
+        U, S, Vh = np.linalg.svd(V1s_orth_V2s_orth, full_matrices=False)
+        pca_features_1 = np.dot(V1s_orth, Vh[0, :])
+        pca_features_2 = np.dot(V2s_orth, Vh[0, :])
+
+        # write unit_pair_info.json
+        unit_pair_info = {
+            'channel_neighborhood_ids': channel_neighborhood_channel_ids,
+            'channel_neighborhood_locations': serialize_channel_locations(channel_locations_in_neighborhood),
+            'num_events_1': len(spike_times_1),
+            'num_events_2': len(spike_times_2),
+            'unit_id1': unit_pair_id[0],
+            'unit_id2': unit_pair_id[1],
+        }
+        print(f'  Num. channels in joiont neighborhood: {len(channel_neighborhood_channel_ids)}')
+        print(f'  Num. events 1: {len(spike_times_1)}')
+        print(f'  Num. events 2: {len(spike_times_2)}')
+        with open(f'{unit_pair_folder}/unit_pair_info.json', 'w') as f:
+            json.dump(unit_pair_info, f, indent=2)
+        # open data.zarr
+        data_zarr_fname = f'{unit_pair_folder}/data.zarr'
+        data_zarr_root_group = zarr.open(data_zarr_fname, mode="w")
+        data_zarr_root_group.create_dataset("spike_times_1", data=spike_times_sec_1.astype(np.float32), chunks=(100000,))
+        data_zarr_root_group.create_dataset("spike_times_2", data=spike_times_sec_2.astype(np.float32), chunks=(100000,))
+        data_zarr_root_group.create_dataset("average_waveform_1_in_neighborhood", data=average_waveform_1_in_neighborhood.astype(np.float32), chunks=(1000, 1000))
+        data_zarr_root_group.create_dataset("average_waveform_2_in_neighborhood", data=average_waveform_2_in_neighborhood.astype(np.float32), chunks=(1000, 1000))
+        data_zarr_root_group.create_dataset("cross_correlogram_bin_edges_sec", data=cross_correlogram['bin_edges_sec'], chunks=(1000,))
+        data_zarr_root_group.create_dataset("cross_correlogram_bin_counts", data=cross_correlogram['bin_counts'], chunks=(1000,))
+        data_zarr_root_group.create_dataset("discrimination_features_1", data=discrimination_features_1.astype(np.float32), chunks=(10000,))
+        data_zarr_root_group.create_dataset("discrimination_features_2", data=discrimination_features_2.astype(np.float32), chunks=(10000,))
+        data_zarr_root_group.create_dataset("pca_features_1", data=pca_features_1.astype(np.float32), chunks=(10000,))
+        data_zarr_root_group.create_dataset("pca_features_2", data=pca_features_2.astype(np.float32), chunks=(10000,))
+
+    # create batch_info.json
+    batch_info = {
+        'batch_id': batch_id,
+        'channel_ids': channel_ids,
+        'sampling_frequency': float(recording.get_sampling_frequency()),
+        'num_frames': int(recording.get_num_frames()),
+        'unit_ids': unit_ids,
+        'unit_pair_ids': unit_pair_ids,
+        'channel_locations': serialize_channel_locations(recording.get_channel_locations())
+    }
+    print(f'Num. channels: {len(channel_ids)}')
+    print(f'Num. units: {len(unit_ids)}')
+    print(f'Num. unit pairs: {len(unit_pair_ids)}')
+    print(f'Num. frames: {batch_info["num_frames"]}')
+    with open(f'{output_folder}/batch_info.json', 'w') as f:
+        json.dump(batch_info, f, indent=2)
     
     # write batch.yaml
     print('Writing batch.yaml...')

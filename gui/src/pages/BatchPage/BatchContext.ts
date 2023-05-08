@@ -1,12 +1,15 @@
 import { getFileData } from "@figurl/interface"
 import React, { useCallback, useEffect, useState } from "react"
 
+export type UnitPairId = [string | number, string | number]
+
 export type BatchInfo = {
     batch_id: string
     channel_ids: (string | number)[]
     sampling_frequency: number
     num_frames: number
     unit_ids: (string | number)[]
+    unit_pair_ids: UnitPairId[]
     channel_locations: {x: number, y: number}[]
 }
 

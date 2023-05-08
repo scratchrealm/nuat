@@ -93,7 +93,7 @@ type RatingScaleProps = {
     tooltip?: string
 }
 
-const RatingScale: FunctionComponent<RatingScaleProps> = ({ value, onChange, readOnly, tooltip }) => {
+export const RatingScale: FunctionComponent<RatingScaleProps> = ({ value, onChange, readOnly, tooltip }) => {
     // const values = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
     const values = [[0, 1, 2, 3, 4, 5]]
     return (
@@ -126,7 +126,7 @@ type CheckboxComponentProps = {
     readOnly?: boolean
 }
 
-const CheckboxComponent: FunctionComponent<CheckboxComponentProps> = ({ label, value, onChange, readOnly }) => {
+export const CheckboxComponent: FunctionComponent<CheckboxComponentProps> = ({ label, value, onChange, readOnly }) => {
     return (
         <div>
             <input disabled={readOnly} type="checkbox" checked={value} onChange={evt => {
@@ -142,7 +142,7 @@ type CommentsComponentProps = {
     readOnly?: boolean
 }
 
-const CommentsComponent: FunctionComponent<CommentsComponentProps> = ({ value, onChange, readOnly }) => {
+export const CommentsComponent: FunctionComponent<CommentsComponentProps> = ({ value, onChange, readOnly }) => {
     return (
         <div>
             <textarea disabled={readOnly} value={value} rows={6} onChange={evt => {

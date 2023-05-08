@@ -5,6 +5,7 @@ import DescriptionTab from "./DescriptionTab";
 import SetupBatchContext from "./SetupBatchContext";
 import SetupBatchAssessment from "./SetupBatchAssessment";
 import UnitsTab from "./UnitsTab/UnitsTab";
+import UnitPairsTab from "./UnitPairsTab/UnitPairsTab";
 
 type Props = {
     batchId: string
@@ -38,7 +39,10 @@ const BatchPage: FunctionComponent<Props> = ({batchId, width, height}) => {
                         width={0}
                         height={0}
                     />
-                    <div>Not yet implemented</div>
+                    <UnitPairsTab
+                        width={0}
+                        height={0}
+                    />
                     <DescriptionTab
                         width={0}
                         height={0}

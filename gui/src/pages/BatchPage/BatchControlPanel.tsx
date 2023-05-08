@@ -25,7 +25,8 @@ const BatchControlPanel: FunctionComponent<Props> = () => {
         const newBatchAssessment = {
             batchId,
             userId: userId.toString(),
-            unitAssessments: []
+            unitAssessments: [],
+            unitPairAssessments: []
         }
         setBatchAssessment(newBatchAssessment)
     }, [batchId, userId, setBatchAssessment])
