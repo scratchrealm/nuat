@@ -118,16 +118,13 @@ def create_batch(*,
                 'unit_id2': unit_id2,
                 'correlation': correlation
             })
-    # Sort by correlation
-    all_correlations = sorted(all_correlations, key=lambda x: x['correlation'], reverse=True)
-    # Choose the best len(unit_ids) * 3 correlations
+    # Choose the best 3 correlations for each unit
     unit_pair_ids = []
-    for correlation in all_correlations:
-        if len(unit_pair_ids) >= len(unit_ids) * 3:
-            break
-        unit_pair_ids.append([correlation['unit_id1'], correlation['unit_id2']])
-    # sort by unit id[0], then unit_id[1]
-    unit_pair_ids = sorted(unit_pair_ids, key=lambda x: (x[0], x[1]))
+    for unit_id in unit_ids:
+        correlations = [x for x in all_correlations if x['unit_id1'] == unit_id]
+        correlations = sorted(correlations, key=lambda x: x['correlation'], reverse=True)
+        for i in range(min(3, len(correlations))):
+            unit_pair_ids.append([correlations[i]['unit_id1'], correlations[i]['unit_id2']])
     print(f'Using {len(unit_pair_ids)} unit pairs for similarity comparison.')
 
     for unit_pair_id in unit_pair_ids:
