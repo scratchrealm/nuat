@@ -18,14 +18,18 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
     const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setAverageWaveformData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/units/${unitId}/data.zarr`
             const a = viewFiltered ? '_filtered_only' : ''
             const name = 'average_waveform_in_neighborhood' + a
             const c1 = new ZarrArrayClient(zarrUri, name)
             const x = await c1.getArray2D()
+            if (canceled) return
             setAverageWaveformData(x)
         })()
+        return () => {canceled = true}
     }, [batchUri, unitId, viewFiltered])
 
     const channelLocations = useMemo(() => {

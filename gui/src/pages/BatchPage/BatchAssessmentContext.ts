@@ -22,7 +22,7 @@ export type UnitPairAssessment = {
         discriminationOverTime?: number
         overall?: number
     }
-    burstMerge?: boolean
+    burstPair?: boolean
     comments?: string
 }
 

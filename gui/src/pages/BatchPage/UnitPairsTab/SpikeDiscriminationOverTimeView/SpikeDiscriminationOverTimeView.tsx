@@ -9,30 +9,37 @@ type Props = {
     height: number
     unitId1: string | number
     unitId2: string | number
+    mode: 'discrimination_features' | 'spike_amplitudes'
 }
 
-const SpikeDiscriminationOverTimeView: FunctionComponent<Props> = ({width, height, unitId1, unitId2}) => {
+const SpikeDiscriminationOverTimeView: FunctionComponent<Props> = ({width, height, unitId1, unitId2, mode}) => {
     const {batchUri} = useBatch()
     const [spikeTimesData, setSpikeTimesData] = useState<[number[], number[]]>()
     const [spikeDiscriminationData, setSpikeDiscriminationData] = useState<[number[], number[]]>()
     const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setSpikeTimesData(undefined)
+        setSpikeDiscriminationData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/unit_pairs/${unitId1}-${unitId2}/data.zarr`
             const a1 = new ZarrArrayClient(zarrUri, 'spike_times_1')
             const a2 = new ZarrArrayClient(zarrUri, 'spike_times_2')
             const x1 = await a1.getArray1D()
             const x2 = await a2.getArray1D()
+            if (canceled) return
             setSpikeTimesData([x1, x2])
             const a = viewFiltered ? '_filtered_only' : ''
-            const b1 = new ZarrArrayClient(zarrUri, 'discrimination_features_1' + a)
-            const b2 = new ZarrArrayClient(zarrUri, 'discrimination_features_2' + a)
+            const b1 = new ZarrArrayClient(zarrUri, `${mode}_1` + a)
+            const b2 = new ZarrArrayClient(zarrUri, `${mode}_2` + a)
             const y1 = await b1.getArray1D()
             const y2 = await b2.getArray1D()
+            if (canceled) return
             setSpikeDiscriminationData([y1, y2])
         })()
-    }, [batchUri, unitId1, unitId2, viewFiltered])
+        return () => {canceled = true}
+    }, [batchUri, unitId1, unitId2, viewFiltered, mode])
 
     const {valMin, valMax} = useMemo(() => {
         if (!spikeDiscriminationData) return {valMin: 0, valMax: 1}
@@ -56,7 +63,7 @@ const SpikeDiscriminationOverTimeView: FunctionComponent<Props> = ({width, heigh
         return {valMin, valMax}
     }, [spikeDiscriminationData])
 
-    if (!spikeDiscriminationData) return <div>Loading spike discrimination data...</div>
+    if (!spikeDiscriminationData) return <div>Loading data...</div>
     if (!spikeTimesData) return <div>Loading spike times data...</div>
     return (
         <SpikeDiscriminationOverTimePlot

@@ -19,17 +19,21 @@ const AutocorrelogramView: FunctionComponent<Props> = ({width, height, unitId}) 
     const [autocorrelogramData, setAutocorrelogramData] = useState<AutocorrelogramData>()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setAutocorrelogramData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/units/${unitId}/data.zarr`
             const c1 = new ZarrArrayClient(zarrUri, 'autocorrelogram_bin_edges_sec')
             const bin_edges_sec = await c1.getArray1D()
             const c2 = new ZarrArrayClient(zarrUri, 'autocorrelogram_bin_counts')
             const bin_counts = await c2.getArray1D()
+            if (canceled) return
             setAutocorrelogramData({
                 bin_edges_sec,
                 bin_counts
             })
         })()
+        return () => {canceled = true}
     }, [batchUri, unitId])
 
     if (!autocorrelogramData) return <div>Loading...</div>

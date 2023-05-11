@@ -18,16 +18,22 @@ const SpikeAmplitudesView: FunctionComponent<Props> = ({width, height, unitId}) 
     const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setSpikeTimesData(undefined)
+        setSpikeAmplitudesData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/units/${unitId}/data.zarr`
             const c1 = new ZarrArrayClient(zarrUri, 'spike_times')
             const x = await c1.getArray1D()
+            if (canceled) return
             setSpikeTimesData(x)
             const a = viewFiltered ? '_filtered_only' : ''
             const c2 = new ZarrArrayClient(zarrUri, 'spike_amplitudes' + a)
             const y = await c2.getArray1D()
+            if (canceled) return
             setSpikeAmplitudesData(y)
         })()
+        return () => {canceled = true}
     }, [batchUri, unitId, viewFiltered])
 
     const {ampMin, ampMax} = useMemo(() => {

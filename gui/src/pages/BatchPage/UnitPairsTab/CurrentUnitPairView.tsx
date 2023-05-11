@@ -78,14 +78,31 @@ const CurrentUnitPairView: FunctionComponent<Props> = ({width, height}) => {
                                 />
                             </TitledView>
                         </Splitter>
-                        <TitledView title="Spike discrimination over time" width={0} height={0}>
-                            <SpikeDiscriminationOverTimeView
-                                width={0}
-                                height={0}
-                                unitId1={currentUnitPairId[0]}
-                                unitId2={currentUnitPairId[1]}
-                            />
-                        </TitledView>
+                        <Splitter
+                            width={0}
+                            height={0}
+                            direction="vertical"
+                            initialPosition={height / 3}
+                        >
+                            <TitledView title="Spike discrimination over time" width={0} height={0}>
+                                <SpikeDiscriminationOverTimeView
+                                    width={0}
+                                    height={0}
+                                    unitId1={currentUnitPairId[0]}
+                                    unitId2={currentUnitPairId[1]}
+                                    mode="discrimination_features"
+                                />
+                            </TitledView>
+                            <TitledView title="Spike amplitudes" width={0} height={0}>
+                                <SpikeDiscriminationOverTimeView
+                                    width={0}
+                                    height={0}
+                                    unitId1={currentUnitPairId[0]}
+                                    unitId2={currentUnitPairId[1]}
+                                    mode="spike_amplitudes"
+                                />
+                            </TitledView>
+                        </Splitter>
                     </Splitter>
                 </div>
                 <div style={{position: 'absolute', left: width - rightPanelWidth, width: rightPanelWidth, height}}>

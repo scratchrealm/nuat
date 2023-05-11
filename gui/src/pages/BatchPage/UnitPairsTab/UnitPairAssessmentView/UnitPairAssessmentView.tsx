@@ -54,11 +54,11 @@ const UnitPairAssessmentView: FunctionComponent<Props> = ({ width, height, unitP
                         </div>
                     ))
                 }
-                <CheckboxComponent label="Burt merge" value={unitPairAssessment ? (unitPairAssessment.burstMerge ? true : false) : false} onChange={val => {
+                <CheckboxComponent label="Burst pair" value={unitPairAssessment ? (unitPairAssessment.burstPair ? true : false) : false} onChange={val => {
                     setUnitPairAssessment(
                         unitPairId, {
                             ...(unitPairAssessment || {separation: {}}),
-                            burstMerge: val
+                            burstPair: val
                         }
                     )
                 }} readOnly={batchAssessment ? false : true} />

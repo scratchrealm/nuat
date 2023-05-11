@@ -20,17 +20,21 @@ const CrossCorrelogramView: FunctionComponent<Props> = ({width, height, unitId1,
     const [crossCorrelogramData, setCrossCorrelogramData] = useState<CrossCorrelogramData>()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setCrossCorrelogramData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/unit_pairs/${unitId1}-${unitId2}/data.zarr`
             const c1 = new ZarrArrayClient(zarrUri, 'cross_correlogram_bin_edges_sec')
             const bin_edges_sec = await c1.getArray1D()
             const c2 = new ZarrArrayClient(zarrUri, 'cross_correlogram_bin_counts')
             const bin_counts = await c2.getArray1D()
+            if (canceled) return
             setCrossCorrelogramData({
                 bin_edges_sec,
                 bin_counts
             })
         })()
+        return () => {canceled = true}
     }, [batchUri, unitId1, unitId2])
 
     if (!crossCorrelogramData) return <div>Loading...</div>

@@ -21,15 +21,19 @@ const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height,
     const {waveformOpts, viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
-        (async () => {
+        let canceled = false
+        setAverageWaveformComparisonData(undefined)
+        ;(async () => {
             const zarrUri = `${batchUri}/unit_pairs/${unitId1}-${unitId2}/data.zarr`
             const a = viewFiltered ? '_filtered_only' : ''
             const c1 = new ZarrArrayClient(zarrUri, 'average_waveform_1_in_neighborhood' + a)
             const c2 = new ZarrArrayClient(zarrUri, 'average_waveform_2_in_neighborhood' + a)
             const x1 = await c1.getArray2D()
             const x2 = await c2.getArray2D()
+            if (canceled) return
             setAverageWaveformComparisonData([x1, x2])
         })()
+        return () => {canceled = true}
     }, [batchUri, unitId1, unitId2, viewFiltered])
 
     const channelLocations = useMemo(() => {
