@@ -2,6 +2,7 @@ import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
 import { UnitInfo } from "../CurrentUnitView"
+import WaveformOpts from "../WaveformOpts"
 import AverageWaveformPlot from "./AverageWaveformPlot"
 
 type Props = {
@@ -9,9 +10,11 @@ type Props = {
     height: number
     unitId: string | number
     unitInfo: UnitInfo
+    waveformOpts: WaveformOpts
+    setWaveformOpts: (opts: WaveformOpts) => void
 }
 
-const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, unitInfo}) => {
+const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, unitInfo, waveformOpts, setWaveformOpts}) => {
     const {batchUri} = useBatch()
     const [averageWaveformData, setAverageWaveformData] = useState<number[][]>()
 
@@ -47,31 +50,86 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
         return max
     }, [averageWaveformData])
 
+    const leftToolbarWidth = 30
+
     if (!averageWaveformData) return <div>Loading waveform data...</div>
     return (
-        <AverageWaveformPlot
-            allChannelIds={unitInfo.channel_neighborhood_ids}
-            channelIds={unitInfo.channel_neighborhood_ids}
-            units={[
-                {
-                    channelIds: unitInfo.channel_neighborhood_ids,
-                    waveform: transpose(averageWaveformData),
-                    waveformColor: 'blue'
-                }
-            ]}
-            layoutMode="vertical"
-            hideElectrodes={false}
-            channelLocations={channelLocations}
-            peakAmplitude={peakAmplitude}
-            ampScaleFactor={1}
-            horizontalStretchFactor={1}
-            showChannelIds={true}
-            useUnitColors={false}
-            width={width}
-            height={height}
-            showReferenceProbe={false}
-            disableAutoRotate={true}
-        />
+        <div style={{position: 'absolute', width, height}}>
+            <div style={{position: 'absolute', width: leftToolbarWidth, height}}>
+                <WaveformViewLeftToolbar
+                    width={leftToolbarWidth}
+                    height={height}
+                    waveformOpts={waveformOpts}
+                    setWaveformOpts={setWaveformOpts}
+                />
+            </div>
+            <div style={{position: 'absolute', left: leftToolbarWidth, width: width - leftToolbarWidth, height}}>
+                <AverageWaveformPlot
+                    allChannelIds={unitInfo.channel_neighborhood_ids}
+                    channelIds={unitInfo.channel_neighborhood_ids}
+                    units={[
+                        {
+                            channelIds: unitInfo.channel_neighborhood_ids,
+                            waveform: transpose(averageWaveformData),
+                            waveformColor: 'blue'
+                        }
+                    ]}
+                    layoutMode={waveformOpts.layoutMode}
+                    hideElectrodes={false}
+                    channelLocations={channelLocations}
+                    peakAmplitude={peakAmplitude}
+                    ampScaleFactor={1}
+                    horizontalStretchFactor={1}
+                    showChannelIds={true}
+                    useUnitColors={false}
+                    width={width}
+                    height={height}
+                    showReferenceProbe={false}
+                    disableAutoRotate={true}
+                />
+            </div>
+        </div>
+    )
+}
+
+type WaveformViewLeftToolbarProps = {
+    width: number
+    height: number
+    waveformOpts: WaveformOpts
+    setWaveformOpts: (opts: WaveformOpts) => void
+}
+
+export const WaveformViewLeftToolbar: FunctionComponent<WaveformViewLeftToolbarProps> = ({width, height, waveformOpts, setWaveformOpts}) => {
+    return (
+        <div style={{position: 'absolute', width, height}}>
+            <CheckboxComponent
+                title="Geometry layout mode"
+                value={waveformOpts.layoutMode === 'geom'}
+                onChange={val => {
+                    setWaveformOpts({
+                        ...waveformOpts,
+                        layoutMode: val ? 'geom' : 'vertical'
+                    })
+                }}
+            />
+        </div>
+    )
+}
+
+type CheckboxComponentProps = {
+    title: string
+    value: boolean
+    onChange: (val: boolean) => void
+    readOnly?: boolean
+}
+
+export const CheckboxComponent: FunctionComponent<CheckboxComponentProps> = ({ title, value, onChange, readOnly }) => {
+    return (
+        <div>
+            <input disabled={readOnly} type="checkbox" checked={value} onChange={evt => {
+                onChange(evt.target.checked)
+            }} title={title} />
+        </div>
     )
 }
 

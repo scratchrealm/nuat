@@ -2,6 +2,7 @@ import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
 import AverageWaveformPlot from "../../UnitsTab/AverageWaveformView/AverageWaveformPlot"
+import { WaveformViewLeftToolbar } from "../../UnitsTab/AverageWaveformView/AverageWaveformView"
 import { UnitPairInfo } from "../CurrentUnitPairView"
 
 type Props = {
@@ -10,9 +11,11 @@ type Props = {
     unitId1: string | number
     unitId2: string | number
     unitPairInfo: UnitPairInfo
+    waveformOpts: any
+    setWaveformOpts: (opts: any) => void
 }
 
-const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height, unitId1, unitId2, unitPairInfo}) => {
+const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height, unitId1, unitId2, unitPairInfo, waveformOpts, setWaveformOpts}) => {
     const {batchUri} = useBatch()
     const [averageWaveformComparisonData, setAverageWaveformComparisonData] = useState<[number[][], number[][]]>()
 
@@ -52,36 +55,50 @@ const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height,
         return max
     }, [averageWaveformComparisonData])
 
+    const leftToolbarWidth = 30
+
     if (!averageWaveformComparisonData) return <div>Loading waveform comparison data...</div>
     return (
-        <AverageWaveformPlot
-            allChannelIds={unitPairInfo.channel_neighborhood_ids}
-            channelIds={unitPairInfo.channel_neighborhood_ids}
-            units={[
-                {
-                    channelIds: unitPairInfo.channel_neighborhood_ids,
-                    waveform: transpose(averageWaveformComparisonData[0]),
-                    waveformColor: 'blue'
-                },
-                {
-                    channelIds: unitPairInfo.channel_neighborhood_ids,
-                    waveform: transpose(averageWaveformComparisonData[1]),
-                    waveformColor: 'red'
-                }
-            ]}
-            layoutMode="vertical"
-            hideElectrodes={false}
-            channelLocations={channelLocations}
-            peakAmplitude={peakAmplitude}
-            ampScaleFactor={1}
-            horizontalStretchFactor={1}
-            showChannelIds={true}
-            useUnitColors={true}
-            width={width}
-            height={height}
-            showReferenceProbe={false}
-            disableAutoRotate={true}
-        />
+        <div style={{position: 'absolute', width, height}}>
+            <div style={{position: 'absolute', width: leftToolbarWidth, height}}>
+                <WaveformViewLeftToolbar
+                    width={leftToolbarWidth}
+                    height={height}
+                    waveformOpts={waveformOpts}
+                    setWaveformOpts={setWaveformOpts}
+                />
+            </div>
+            <div style={{position: 'absolute', left: leftToolbarWidth, width: width - leftToolbarWidth, height}}>
+                <AverageWaveformPlot
+                    allChannelIds={unitPairInfo.channel_neighborhood_ids}
+                    channelIds={unitPairInfo.channel_neighborhood_ids}
+                    units={[
+                        {
+                            channelIds: unitPairInfo.channel_neighborhood_ids,
+                            waveform: transpose(averageWaveformComparisonData[0]),
+                            waveformColor: 'blue'
+                        },
+                        {
+                            channelIds: unitPairInfo.channel_neighborhood_ids,
+                            waveform: transpose(averageWaveformComparisonData[1]),
+                            waveformColor: 'red'
+                        }
+                    ]}
+                    layoutMode={waveformOpts.layoutMode}
+                    hideElectrodes={false}
+                    channelLocations={channelLocations}
+                    peakAmplitude={peakAmplitude}
+                    ampScaleFactor={1}
+                    horizontalStretchFactor={1}
+                    showChannelIds={true}
+                    useUnitColors={true}
+                    width={width}
+                    height={height}
+                    showReferenceProbe={false}
+                    disableAutoRotate={true}
+                />
+            </div>
+        </div>
     )
 }
 

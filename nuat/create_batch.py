@@ -182,7 +182,7 @@ def create_batch(*,
             'unit_id1': unit_pair_id[0],
             'unit_id2': unit_pair_id[1],
         }
-        print(f'  Num. channels in joiont neighborhood: {len(channel_neighborhood_channel_ids)}')
+        print(f'  Num. channels in joint neighborhood: {len(channel_neighborhood_channel_ids)}')
         print(f'  Num. events 1: {len(spike_times_1)}')
         print(f'  Num. events 2: {len(spike_times_2)}')
         with open(f'{unit_pair_folder}/unit_pair_info.json', 'w') as f:

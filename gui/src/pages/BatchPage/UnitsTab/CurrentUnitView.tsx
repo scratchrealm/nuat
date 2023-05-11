@@ -2,6 +2,7 @@ import { Splitter } from "@figurl/core-views"
 import { getFileData } from "@figurl/interface"
 import { SetupTimeseriesSelection } from "@figurl/timeseries-views"
 import { FunctionComponent, useEffect, useState } from "react"
+import TitledView from "../../../components/TitledView"
 import { useBatch } from "../BatchContext"
 import AutocorrelogramView from "./AutocorrelogramView/AutocorrelogramView"
 import AverageWaveformView from "./AverageWaveformView/AverageWaveformView"
@@ -9,10 +10,13 @@ import SnippetsView from "./SnippetsView/SnippetsView"
 import SpikeAmplitudesView from "./SpikeAmplitudesView/SpikeAmplitudesView"
 import UnitAssessmentView from "./UnitAssessmentView/UnitAssessmentView"
 import { useUnitSelection } from "./UnitSelectionContext"
+import WaveformOpts from "./WaveformOpts"
 
 type Props = {
     width: number
     height: number
+    waveformOpts: WaveformOpts
+    setWaveformOpts: (opts: WaveformOpts) => void
 }
 
 export type UnitInfo = {
@@ -38,7 +42,7 @@ const useUnitInfo = (unitId: (string | number) | undefined) => {
     return unitInfo
 }
 
-const CurrentUnitView: FunctionComponent<Props> = ({width, height}) => {
+const CurrentUnitView: FunctionComponent<Props> = ({width, height, waveformOpts, setWaveformOpts}) => {
     const {currentUnitId} = useUnitSelection()
     const unitInfo = useUnitInfo(currentUnitId)
     if (currentUnitId === undefined) return <div>No unit selected</div>
@@ -66,30 +70,41 @@ const CurrentUnitView: FunctionComponent<Props> = ({width, height}) => {
                                 direction="horizontal"
                                 initialPosition={width / 2}
                             >
-                                <AutocorrelogramView
-                                    width={0}
-                                    height={0}
-                                    unitId={currentUnitId}
-                                />
-                                <AverageWaveformView
-                                    width={0}
-                                    height={0}
-                                    unitId={currentUnitId}
-                                    unitInfo={unitInfo}
-                                />
+                                <TitledView title="Autocorrelogram" width={0} height={0}>
+                                    <AutocorrelogramView
+                                        width={0}
+                                        height={0}
+                                        unitId={currentUnitId}
+                                    />
+                                </TitledView>
+                                <TitledView title="Average waveform" width={0} height={0}>
+                                    <AverageWaveformView
+                                        width={0}
+                                        height={0}
+                                        unitId={currentUnitId}
+                                        unitInfo={unitInfo}
+                                        waveformOpts={waveformOpts}
+                                        setWaveformOpts={setWaveformOpts}
+                                    />
+                                </TitledView>
                             </Splitter>
-                            <SpikeAmplitudesView
+                            <TitledView title="Spike amplitudes" width={0} height={0}>
+                                <SpikeAmplitudesView
+                                    width={0}
+                                    height={0}
+                                    unitId={currentUnitId}
+                                />
+                            </TitledView>
+                        </Splitter>
+                        <TitledView title="Spike snippets" width={0} height={0}>
+                            <SnippetsView
                                 width={0}
                                 height={0}
                                 unitId={currentUnitId}
+                                unitInfo={unitInfo}
+                                waveformOpts={waveformOpts}
                             />
-                        </Splitter>
-                        <SnippetsView
-                            width={0}
-                            height={0}
-                            unitId={currentUnitId}
-                            unitInfo={unitInfo}
-                        />
+                        </TitledView>
                     </Splitter>
                 </div>
                 <div style={{position: 'absolute', left: width - rightPanelWidth, width: rightPanelWidth, height}}>

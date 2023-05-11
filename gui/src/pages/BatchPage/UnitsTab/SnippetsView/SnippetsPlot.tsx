@@ -5,6 +5,7 @@ import { useBatch } from "../../BatchContext"
 import AverageWaveformPlot from "../AverageWaveformView/AverageWaveformPlot"
 import { transpose } from "../AverageWaveformView/AverageWaveformView"
 import { UnitInfo } from "../CurrentUnitView"
+import WaveformOpts from "../WaveformOpts"
 import BoxGrid from "./BoxGrid"
 import SnippetsClient, { Snippet } from "./SnippetsClient"
 
@@ -16,9 +17,10 @@ type Props = {
     averageWaveform?: number[][]
     unitId: string | number
     unitInfo: UnitInfo
+    waveformOpts: WaveformOpts
 }
 
-const SnippetsPlot: FunctionComponent<Props> = ({ width, height, snippetsClient, spikeTimes, averageWaveform, unitInfo }) => {
+const SnippetsPlot: FunctionComponent<Props> = ({ width, height, snippetsClient, spikeTimes, averageWaveform, unitInfo, waveformOpts }) => {
     const [snippets, setSnippets] = useState<Snippet[]>([])
     const {visibleStartTimeSec, visibleEndTimeSec} = useTimeRange()
     
@@ -77,7 +79,7 @@ const SnippetsPlot: FunctionComponent<Props> = ({ width, height, snippetsClient,
                             waveformColor: 'black'
                         }
                     ]}
-                    layoutMode="vertical"
+                    layoutMode={waveformOpts.layoutMode}
                     hideElectrodes={false}
                     channelLocations={channelLocations}
                     peakAmplitude={peakAmplitude}

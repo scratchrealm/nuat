@@ -7,9 +7,11 @@ import UnitPairsList from "./UnitPairsList";
 type Props = {
     width: number
     height: number
+    waveformOpts: any
+    setWaveformOpts: (opts: any) => void
 }
 
-const UnitPairsTab: FunctionComponent<Props> = ({width, height}) => {
+const UnitPairsTab: FunctionComponent<Props> = ({width, height, waveformOpts, setWaveformOpts}) => {
     return (
         <SetupUnitPairSelection>
             <Splitter
@@ -25,6 +27,8 @@ const UnitPairsTab: FunctionComponent<Props> = ({width, height}) => {
                 <CurrentUnitPairView
                     width={0}
                     height={0}
+                    waveformOpts={waveformOpts}
+                    setWaveformOpts={setWaveformOpts}
                 />
             </Splitter>
         </SetupUnitPairSelection>

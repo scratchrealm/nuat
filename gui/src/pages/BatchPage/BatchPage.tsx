@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import BatchControlPanel from "./BatchControlPanel";
 import TabWidget from "../TabWidget/TabWidget";
 import DescriptionTab from "./DescriptionTab";
@@ -6,6 +6,7 @@ import SetupBatchContext from "./SetupBatchContext";
 import SetupBatchAssessment from "./SetupBatchAssessment";
 import UnitsTab from "./UnitsTab/UnitsTab";
 import UnitPairsTab from "./UnitPairsTab/UnitPairsTab";
+import WaveformOpts from "./UnitsTab/WaveformOpts";
 
 type Props = {
     batchId: string
@@ -15,6 +16,7 @@ type Props = {
 
 const BatchPage: FunctionComponent<Props> = ({batchId, width, height}) => {
     const controlPanelWidth = Math.max(80, Math.min(220, width / 6))
+    const [waveformOpts, setWaveformOpts] = useState<WaveformOpts>({layoutMode: 'vertical'})
 
     return (
         <SetupBatchContext batchId={batchId}>
@@ -38,10 +40,14 @@ const BatchPage: FunctionComponent<Props> = ({batchId, width, height}) => {
                     <UnitsTab
                         width={0}
                         height={0}
+                        waveformOpts={waveformOpts}
+                        setWaveformOpts={setWaveformOpts}
                     />
                     <UnitPairsTab
                         width={0}
                         height={0}
+                        waveformOpts={waveformOpts}
+                        setWaveformOpts={setWaveformOpts}
                     />
                     <DescriptionTab
                         width={0}

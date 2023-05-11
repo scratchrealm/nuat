@@ -2,6 +2,7 @@ import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
 import { UnitInfo } from "../CurrentUnitView"
+import WaveformOpts from "../WaveformOpts"
 import SnippetsClient from "./SnippetsClient"
 import SnippetsPlot from "./SnippetsPlot"
 
@@ -10,9 +11,10 @@ type Props = {
     height: number
     unitId: string | number
     unitInfo: UnitInfo
+    waveformOpts: WaveformOpts
 }
 
-const SnippetsView: FunctionComponent<Props> = ({width, height, unitId, unitInfo}) => {
+const SnippetsView: FunctionComponent<Props> = ({width, height, unitId, unitInfo, waveformOpts}) => {
     const {batchUri} = useBatch()
     const [snippetsClient, setSnippetsClient] = useState<SnippetsClient>()
 
@@ -57,6 +59,7 @@ const SnippetsView: FunctionComponent<Props> = ({width, height, unitId, unitInfo
             unitInfo={unitInfo}
             width={width}
             height={height}
+            waveformOpts={waveformOpts}
         />
     )
 }

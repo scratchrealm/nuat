@@ -1,15 +1,18 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import Splitter from "../../../components/Splitter";
 import CurrentUnitView from "./CurrentUnitView";
 import SetupUnitSelection from "./SetupUnitSelection";
 import UnitsList from "./UnitsList";
+import WaveformOpts from "./WaveformOpts";
 
 type Props = {
     width: number
     height: number
+    waveformOpts: WaveformOpts
+    setWaveformOpts: (opts: WaveformOpts) => void
 }
 
-const UnitsTab: FunctionComponent<Props> = ({width, height}) => {
+const UnitsTab: FunctionComponent<Props> = ({width, height, waveformOpts, setWaveformOpts}) => {
     return (
         <SetupUnitSelection>
             <Splitter
@@ -25,6 +28,8 @@ const UnitsTab: FunctionComponent<Props> = ({width, height}) => {
                 <CurrentUnitView
                     width={0}
                     height={0}
+                    waveformOpts={waveformOpts}
+                    setWaveformOpts={setWaveformOpts}
                 />
             </Splitter>
         </SetupUnitSelection>

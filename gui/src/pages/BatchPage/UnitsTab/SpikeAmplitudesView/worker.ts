@@ -65,6 +65,14 @@ async function draw() {
     context.lineTo(timeToPixel(visibleEndTimeSec), amplitudeToPixel(0))
     context.stroke()
 
+    const yTicks = getYTicks(opts.ampMin, opts.ampMax)
+    for (const a of yTicks) {
+        // horizontal alignment right, vertical alignment middle
+        context.textAlign = 'right'
+        context.textBaseline = 'middle'
+        context.fillText(`${a}`, timeToPixel(visibleStartTimeSec) - 5, amplitudeToPixel(a))
+    }
+
     context.fillStyle = 'black'
     for (let i = 0; i < spikeTimes.length; i++) {
         const t = spikeTimes[i]
@@ -76,6 +84,24 @@ async function draw() {
         context.ellipse(x0, y0, 3, 3, 0, 0, Math.PI * 2, false)
         context.fill()
     }
+}
+
+const getYTicks = (ampMin: number, ampMax: number) => {
+    const a = Math.abs(ampMax - ampMin)
+    const b = Math.pow(10, Math.floor(Math.log10(a)))
+    const c = a / b
+    let d = 0
+    if (c < 2) d = 0.2
+    else if (c < 5) d = 0.5
+    else d = 1
+    const e = d * b
+    const f = Math.floor(ampMin / e)
+    const g = Math.ceil(ampMax / e)
+    const ret: number[] = []
+    for (let i = f; i <= g; i++) {
+        ret.push(i * e)
+    }
+    return ret
 }
 
 const drawDebounced = debounce(draw, 100)
