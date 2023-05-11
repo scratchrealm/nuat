@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
+import { useBatchDisplayOptions } from "../../BatchDisplayOptionsContext"
 import AverageWaveformPlot from "../../UnitsTab/AverageWaveformView/AverageWaveformPlot"
 import { WaveformViewLeftToolbar } from "../../UnitsTab/AverageWaveformView/AverageWaveformView"
 import { UnitPairInfo } from "../CurrentUnitPairView"
@@ -11,24 +12,25 @@ type Props = {
     unitId1: string | number
     unitId2: string | number
     unitPairInfo: UnitPairInfo
-    waveformOpts: any
-    setWaveformOpts: (opts: any) => void
 }
 
-const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height, unitId1, unitId2, unitPairInfo, waveformOpts, setWaveformOpts}) => {
+const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height, unitId1, unitId2, unitPairInfo}) => {
     const {batchUri} = useBatch()
     const [averageWaveformComparisonData, setAverageWaveformComparisonData] = useState<[number[][], number[][]]>()
+
+    const {waveformOpts, viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
         (async () => {
             const zarrUri = `${batchUri}/unit_pairs/${unitId1}-${unitId2}/data.zarr`
-            const c1 = new ZarrArrayClient(zarrUri, 'average_waveform_1_in_neighborhood')
-            const c2 = new ZarrArrayClient(zarrUri, 'average_waveform_2_in_neighborhood')
+            const a = viewFiltered ? '_filtered_only' : ''
+            const c1 = new ZarrArrayClient(zarrUri, 'average_waveform_1_in_neighborhood' + a)
+            const c2 = new ZarrArrayClient(zarrUri, 'average_waveform_2_in_neighborhood' + a)
             const x1 = await c1.getArray2D()
             const x2 = await c2.getArray2D()
             setAverageWaveformComparisonData([x1, x2])
         })()
-    }, [batchUri, unitId1, unitId2])
+    }, [batchUri, unitId1, unitId2, viewFiltered])
 
     const channelLocations = useMemo(() => {
         const ret: {[key: string]: number[]} = {}
@@ -64,8 +66,6 @@ const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height,
                 <WaveformViewLeftToolbar
                     width={leftToolbarWidth}
                     height={height}
-                    waveformOpts={waveformOpts}
-                    setWaveformOpts={setWaveformOpts}
                 />
             </div>
             <div style={{position: 'absolute', left: leftToolbarWidth, width: width - leftToolbarWidth, height}}>
@@ -92,7 +92,7 @@ const AverageWaveformComparisonView: FunctionComponent<Props> = ({width, height,
                     horizontalStretchFactor={1}
                     showChannelIds={true}
                     useUnitColors={true}
-                    width={width}
+                    width={width - leftToolbarWidth}
                     height={height}
                     showReferenceProbe={false}
                     disableAutoRotate={true}

@@ -2,6 +2,7 @@ import { useTimeseriesSelectionInitialization } from "@figurl/timeseries-views"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
+import { useBatchDisplayOptions } from "../../BatchDisplayOptionsContext"
 import SpikeAmplitudesPlot from "./SpikeAmplitudesPlot"
 
 type Props = {
@@ -14,6 +15,7 @@ const SpikeAmplitudesView: FunctionComponent<Props> = ({width, height, unitId}) 
     const {batchUri} = useBatch()
     const [spikeTimesData, setSpikeTimesData] = useState<number[]>()
     const [spikeAmplitudesData, setSpikeAmplitudesData] = useState<number[]>()
+    const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
         (async () => {
@@ -21,11 +23,12 @@ const SpikeAmplitudesView: FunctionComponent<Props> = ({width, height, unitId}) 
             const c1 = new ZarrArrayClient(zarrUri, 'spike_times')
             const x = await c1.getArray1D()
             setSpikeTimesData(x)
-            const c2 = new ZarrArrayClient(zarrUri, 'spike_amplitudes')
+            const a = viewFiltered ? '_filtered_only' : ''
+            const c2 = new ZarrArrayClient(zarrUri, 'spike_amplitudes' + a)
             const y = await c2.getArray1D()
             setSpikeAmplitudesData(y)
         })()
-    }, [batchUri, unitId])
+    }, [batchUri, unitId, viewFiltered])
 
     const {ampMin, ampMax} = useMemo(() => {
         if (!spikeAmplitudesData) return {ampMin: 0, ampMax: 1}

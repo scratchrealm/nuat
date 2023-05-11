@@ -1,8 +1,8 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
+import { useBatchDisplayOptions } from "../../BatchDisplayOptionsContext"
 import { UnitInfo } from "../CurrentUnitView"
-import WaveformOpts from "../WaveformOpts"
 import AverageWaveformPlot from "./AverageWaveformPlot"
 
 type Props = {
@@ -10,22 +10,23 @@ type Props = {
     height: number
     unitId: string | number
     unitInfo: UnitInfo
-    waveformOpts: WaveformOpts
-    setWaveformOpts: (opts: WaveformOpts) => void
 }
 
-const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, unitInfo, waveformOpts, setWaveformOpts}) => {
+const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, unitInfo}) => {
     const {batchUri} = useBatch()
     const [averageWaveformData, setAverageWaveformData] = useState<number[][]>()
+    const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
         (async () => {
             const zarrUri = `${batchUri}/units/${unitId}/data.zarr`
-            const c1 = new ZarrArrayClient(zarrUri, 'average_waveform_in_neighborhood')
+            const a = viewFiltered ? '_filtered_only' : ''
+            const name = 'average_waveform_in_neighborhood' + a
+            const c1 = new ZarrArrayClient(zarrUri, name)
             const x = await c1.getArray2D()
             setAverageWaveformData(x)
         })()
-    }, [batchUri, unitId])
+    }, [batchUri, unitId, viewFiltered])
 
     const channelLocations = useMemo(() => {
         const ret: {[key: string]: number[]} = {}
@@ -50,6 +51,8 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
         return max
     }, [averageWaveformData])
 
+    const {waveformOpts} = useBatchDisplayOptions()
+
     const leftToolbarWidth = 30
 
     if (!averageWaveformData) return <div>Loading waveform data...</div>
@@ -59,8 +62,6 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
                 <WaveformViewLeftToolbar
                     width={leftToolbarWidth}
                     height={height}
-                    waveformOpts={waveformOpts}
-                    setWaveformOpts={setWaveformOpts}
                 />
             </div>
             <div style={{position: 'absolute', left: leftToolbarWidth, width: width - leftToolbarWidth, height}}>
@@ -82,7 +83,7 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
                     horizontalStretchFactor={1}
                     showChannelIds={true}
                     useUnitColors={false}
-                    width={width}
+                    width={width - leftToolbarWidth}
                     height={height}
                     showReferenceProbe={false}
                     disableAutoRotate={true}
@@ -95,11 +96,10 @@ const AverageWaveformView: FunctionComponent<Props> = ({width, height, unitId, u
 type WaveformViewLeftToolbarProps = {
     width: number
     height: number
-    waveformOpts: WaveformOpts
-    setWaveformOpts: (opts: WaveformOpts) => void
 }
 
-export const WaveformViewLeftToolbar: FunctionComponent<WaveformViewLeftToolbarProps> = ({width, height, waveformOpts, setWaveformOpts}) => {
+export const WaveformViewLeftToolbar: FunctionComponent<WaveformViewLeftToolbarProps> = ({width, height}) => {
+    const {waveformOpts, setWaveformOpts} = useBatchDisplayOptions()
     return (
         <div style={{position: 'absolute', width, height}}>
             <CheckboxComponent

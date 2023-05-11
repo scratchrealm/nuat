@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
 import { useBatch } from "../../BatchContext"
+import { useBatchDisplayOptions } from "../../BatchDisplayOptionsContext"
 import SpikeDiscriminationOverTimePlot from "./SpikeDiscriminationOverTimePlot"
 
 type Props = {
@@ -14,6 +15,7 @@ const SpikeDiscriminationOverTimeView: FunctionComponent<Props> = ({width, heigh
     const {batchUri} = useBatch()
     const [spikeTimesData, setSpikeTimesData] = useState<[number[], number[]]>()
     const [spikeDiscriminationData, setSpikeDiscriminationData] = useState<[number[], number[]]>()
+    const {viewFiltered} = useBatchDisplayOptions()
 
     useEffect(() => {
         (async () => {
@@ -23,13 +25,14 @@ const SpikeDiscriminationOverTimeView: FunctionComponent<Props> = ({width, heigh
             const x1 = await a1.getArray1D()
             const x2 = await a2.getArray1D()
             setSpikeTimesData([x1, x2])
-            const b1 = new ZarrArrayClient(zarrUri, 'discrimination_features_1')
-            const b2 = new ZarrArrayClient(zarrUri, 'discrimination_features_2')
+            const a = viewFiltered ? '_filtered_only' : ''
+            const b1 = new ZarrArrayClient(zarrUri, 'discrimination_features_1' + a)
+            const b2 = new ZarrArrayClient(zarrUri, 'discrimination_features_2' + a)
             const y1 = await b1.getArray1D()
             const y2 = await b2.getArray1D()
             setSpikeDiscriminationData([y1, y2])
         })()
-    }, [batchUri, unitId1, unitId2])
+    }, [batchUri, unitId1, unitId2, viewFiltered])
 
     const {valMin, valMax} = useMemo(() => {
         if (!spikeDiscriminationData) return {valMin: 0, valMax: 1}

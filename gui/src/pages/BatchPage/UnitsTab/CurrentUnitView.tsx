@@ -10,13 +10,11 @@ import SnippetsView from "./SnippetsView/SnippetsView"
 import SpikeAmplitudesView from "./SpikeAmplitudesView/SpikeAmplitudesView"
 import UnitAssessmentView from "./UnitAssessmentView/UnitAssessmentView"
 import { useUnitSelection } from "./UnitSelectionContext"
-import WaveformOpts from "./WaveformOpts"
 
 type Props = {
     width: number
     height: number
-    waveformOpts: WaveformOpts
-    setWaveformOpts: (opts: WaveformOpts) => void
+
 }
 
 export type UnitInfo = {
@@ -42,7 +40,7 @@ const useUnitInfo = (unitId: (string | number) | undefined) => {
     return unitInfo
 }
 
-const CurrentUnitView: FunctionComponent<Props> = ({width, height, waveformOpts, setWaveformOpts}) => {
+const CurrentUnitView: FunctionComponent<Props> = ({width, height}) => {
     const {currentUnitId} = useUnitSelection()
     const unitInfo = useUnitInfo(currentUnitId)
     if (currentUnitId === undefined) return <div>No unit selected</div>
@@ -83,8 +81,6 @@ const CurrentUnitView: FunctionComponent<Props> = ({width, height, waveformOpts,
                                         height={0}
                                         unitId={currentUnitId}
                                         unitInfo={unitInfo}
-                                        waveformOpts={waveformOpts}
-                                        setWaveformOpts={setWaveformOpts}
                                     />
                                 </TitledView>
                             </Splitter>
@@ -102,7 +98,6 @@ const CurrentUnitView: FunctionComponent<Props> = ({width, height, waveformOpts,
                                 height={0}
                                 unitId={currentUnitId}
                                 unitInfo={unitInfo}
-                                waveformOpts={waveformOpts}
                             />
                         </TitledView>
                     </Splitter>

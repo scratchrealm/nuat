@@ -13,8 +13,6 @@ import { useUnitPairSelection } from "./UnitPairSelectionContext"
 type Props = {
     width: number
     height: number
-    waveformOpts: any
-    setWaveformOpts: (opts: any) => void
 }
 
 export type UnitPairInfo = {
@@ -40,7 +38,7 @@ const useUnitPairInfo = (unitPairId: UnitPairId | undefined) => {
     return unitPairInfo
 }
 
-const CurrentUnitPairView: FunctionComponent<Props> = ({width, height, waveformOpts, setWaveformOpts}) => {
+const CurrentUnitPairView: FunctionComponent<Props> = ({width, height}) => {
     const {currentUnitPairId} = useUnitPairSelection()
     const unitPairInfo = useUnitPairInfo(currentUnitPairId)
     if (currentUnitPairId === undefined) return <div>No unit pair selected</div>
@@ -77,8 +75,6 @@ const CurrentUnitPairView: FunctionComponent<Props> = ({width, height, waveformO
                                     unitId1={currentUnitPairId[0]}
                                     unitId2={currentUnitPairId[1]}
                                     unitPairInfo={unitPairInfo}
-                                    waveformOpts={waveformOpts}
-                                    setWaveformOpts={setWaveformOpts}
                                 />
                             </TitledView>
                         </Splitter>

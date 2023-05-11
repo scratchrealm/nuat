@@ -8,6 +8,7 @@ const numSnippetsPerChunk = 100
 
 class SnippetsClient {
     #chunks: {[index: number]: Snippet[]} = {}
+    #chunksLoading: {[index: number]: boolean} = {}
     constructor(private arrayClient: ZarrArrayClient) {
     }
     async getSnippets(start: number, end: number) {
@@ -34,6 +35,17 @@ class SnippetsClient {
     }
     async _loadChunk(chunkIndex: number) {
         if (this.#chunks[chunkIndex]) return
+        while (this.#chunksLoading[chunkIndex]) {
+            // if the chunk is already loading, wait for it to finish
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(null)
+                }, 10)
+            })
+        }
+        if (this.#chunks[chunkIndex]) return
+        console.log(`Loading chunk ${chunkIndex}`)
+        this.#chunksLoading[chunkIndex] = true
         const start = chunkIndex * numSnippetsPerChunk
         let end = (chunkIndex + 1) * numSnippetsPerChunk
         const shape = await this.arrayClient.shape()
@@ -43,6 +55,7 @@ class SnippetsClient {
         this.#chunks[chunkIndex] = array.map(waveform => ({
             waveform: waveform as number[][]
         }))
+        this.#chunksLoading[chunkIndex] = false
     }
 }
 

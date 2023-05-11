@@ -1,4 +1,4 @@
-import { FunctionComponent, useMemo, useState } from "react"
+import { FunctionComponent, useMemo } from "react"
 import Hyperlink from "../../../../components/Hyperlink"
 import { useBatchAssessment } from "../../BatchAssessmentContext"
 import { UnitInfo } from "../CurrentUnitView"

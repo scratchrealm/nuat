@@ -5,6 +5,8 @@ import Hyperlink from "../../components/Hyperlink"
 import useRoute from "../../useRoute"
 import { useBatchAssessment } from "./BatchAssessmentContext"
 import { useBatch } from "./BatchContext"
+import { useBatchDisplayOptions } from "./BatchDisplayOptionsContext"
+import BatchDisplayOptionsControl from "./BatchDisplayOptionsControl"
 
 type Props = {
     width: number
@@ -54,6 +56,8 @@ const BatchControlPanel: FunctionComponent<Props> = () => {
                     <div><Hyperlink onClick={saveBatchAssessment}>Save assessment</Hyperlink></div>
                 )
             }
+            <hr />
+            <BatchDisplayOptionsControl />
         </div>
     )
 }

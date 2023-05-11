@@ -58,19 +58,18 @@ async function draw() {
         return canvasHeight - margins.bottom - (canvasHeight - margins.top - margins.bottom) * (a * amplitudeScaleFactor - opts.ampMin) / (opts.ampMax - opts.ampMin)
     }
 
-    // zero line
-    context.strokeStyle = 'gray'
-    context.beginPath()
-    context.moveTo(timeToPixel(visibleStartTimeSec), amplitudeToPixel(0))
-    context.lineTo(timeToPixel(visibleEndTimeSec), amplitudeToPixel(0))
-    context.stroke()
-
     const yTicks = getYTicks(opts.ampMin, opts.ampMax)
     for (const a of yTicks) {
-        // horizontal alignment right, vertical alignment middle
+        context.strokeStyle = 'black'
         context.textAlign = 'right'
         context.textBaseline = 'middle'
         context.fillText(`${a}`, timeToPixel(visibleStartTimeSec) - 5, amplitudeToPixel(a))
+
+        context.strokeStyle = 'gray'
+        context.beginPath()
+        context.moveTo(timeToPixel(visibleStartTimeSec), amplitudeToPixel(a))
+        context.lineTo(timeToPixel(visibleEndTimeSec), amplitudeToPixel(a))
+        context.stroke()
     }
 
     context.fillStyle = 'black'

@@ -1,11 +1,9 @@
-import { useTimeRange, useTimeseriesSelection } from "@figurl/timeseries-views"
+import { useTimeRange } from "@figurl/timeseries-views"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
-import ZarrArrayClient from "../../../../zarr/ZarrArrayClient"
-import { useBatch } from "../../BatchContext"
+import { WaveformOpts } from "../../BatchDisplayOptionsContext"
 import AverageWaveformPlot from "../AverageWaveformView/AverageWaveformPlot"
 import { transpose } from "../AverageWaveformView/AverageWaveformView"
 import { UnitInfo } from "../CurrentUnitView"
-import WaveformOpts from "../WaveformOpts"
 import BoxGrid from "./BoxGrid"
 import SnippetsClient, { Snippet } from "./SnippetsClient"
 
@@ -25,6 +23,7 @@ const SnippetsPlot: FunctionComponent<Props> = ({ width, height, snippetsClient,
     const {visibleStartTimeSec, visibleEndTimeSec} = useTimeRange()
     
     useEffect(() => {
+        let canceled = false
         let visibleIndices: number[] = []
         if (spikeTimes && visibleStartTimeSec !== undefined && visibleEndTimeSec !== undefined) {
             visibleIndices = spikeTimes.map((t, i) => ({t, i})).filter(({t, i}) => (t >= visibleStartTimeSec) && (t < visibleEndTimeSec)).map(({t, i}) => i)
@@ -33,8 +32,10 @@ const SnippetsPlot: FunctionComponent<Props> = ({ width, height, snippetsClient,
         const i2 = Math.min(visibleIndices[visibleIndices.length - 1] || 0, i1 + 20)
         ;(async () => {
             const x = await snippetsClient.getSnippets(i1, i2)
+            if (canceled) return
             setSnippets(x)
         })()
+        return () => {canceled = true}
     }, [snippetsClient, spikeTimes, visibleStartTimeSec, visibleEndTimeSec])
 
     const channelLocations = useMemo(() => {
