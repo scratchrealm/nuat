@@ -212,6 +212,17 @@ def create_batch(*,
             U_filtered_only, S_filtered_only, Vh_filtered_only = np.linalg.svd(V1s_orth_V2s_orth_filtered_only, full_matrices=False)
             pca_features_1_filtered_only = np.dot(V1s_orth_filtered_only, Vh_filtered_only[0, :])
             pca_features_2_filtered_only = np.dot(V2s_orth_filtered_only, Vh_filtered_only[0, :])
+        
+        # spike amplitudes
+        peak_channel_index_1_in_neighborhood = np.argmin(np.min(average_waveform_1_in_neighborhood, axis=0))
+        spike_amplitudes_1 = np.min(snippets_1_in_neighborhood[:, :, peak_channel_index_1_in_neighborhood], axis=1)
+        peak_channel_index_2_in_neighborhood = np.argmin(np.min(average_waveform_2_in_neighborhood, axis=0))
+        spike_amplitudes_2 = np.min(snippets_2_in_neighborhood[:, :, peak_channel_index_2_in_neighborhood], axis=1)
+        if recording_filtered_only is not None:
+            peak_channel_index_1_in_neighborhood_filtered_only = np.argmin(np.min(average_waveform_1_in_neighborhood_filtered_only, axis=0))
+            spike_amplitudes_1_filtered_only = np.min(snippets_1_in_neighborhood_filtered_only[:, :, peak_channel_index_1_in_neighborhood_filtered_only], axis=1)
+            peak_channel_index_2_in_neighborhood_filtered_only = np.argmin(np.min(average_waveform_2_in_neighborhood_filtered_only, axis=0))
+            spike_amplitudes_2_filtered_only = np.min(snippets_2_in_neighborhood_filtered_only[:, :, peak_channel_index_2_in_neighborhood_filtered_only], axis=1)
 
         # write unit_pair_info.json
         unit_pair_info = {
@@ -249,6 +260,11 @@ def create_batch(*,
         if recording_filtered_only is not None:
             data_zarr_root_group.create_dataset("pca_features_1_filtered_only", data=pca_features_1_filtered_only.astype(np.float32), chunks=(10000,))
             data_zarr_root_group.create_dataset("pca_features_2_filtered_only", data=pca_features_2_filtered_only.astype(np.float32), chunks=(10000,))
+        data_zarr_root_group.create_dataset("spike_amplitudes_1", data=spike_amplitudes_1.astype(np.float32), chunks=(10000,))
+        data_zarr_root_group.create_dataset("spike_amplitudes_2", data=spike_amplitudes_2.astype(np.float32), chunks=(10000,))
+        if recording_filtered_only is not None:
+            data_zarr_root_group.create_dataset("spike_amplitudes_1_filtered_only", data=spike_amplitudes_1_filtered_only.astype(np.float32), chunks=(10000,))
+            data_zarr_root_group.create_dataset("spike_amplitudes_2_filtered_only", data=spike_amplitudes_2_filtered_only.astype(np.float32), chunks=(10000,))
 
     # create batch_info.json
     batch_info = {
